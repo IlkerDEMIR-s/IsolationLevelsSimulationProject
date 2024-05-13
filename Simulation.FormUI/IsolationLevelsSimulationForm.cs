@@ -15,12 +15,11 @@ namespace Simulation.FormUI
 {
     public partial class IsolationLevelsSimulationForm : Form
     {
-        public string connectionString = "Server=SQLEXPRESS;Database=AdventureWorks2022;User Id=sa;Password=password;Connect Timeout=120;";
+        public string connectionString = "Server=SQLEXPRESS;Database=AdventureWorks2022;User Id=id;Password=password;password Timeout=120;";
 
-        //Connect Timeout=120;  İşlemi tamamlamak ve SQL Server'a daha fazla zaman tanımak için zaman aşımı süresini arttır.
-        //Sorguların daha hızlı çalışmasını sağlamak için indeksler eklenecek!(PART 1 indexiz, PART 2 indexli)
+        //Connect Timeout=120; Increase the timeout period to complete the operation and give SQL Server more time.
 
-        public int numberOfRunTransactions = 10; //100 olacak
+        public int numberOfRunTransactions = 10; //100  
         public int deadlockCount = 0;
         public int[][] deadlockCounts = new int[2][] { new int[4], new int[4] };
 
@@ -56,7 +55,7 @@ namespace Simulation.FormUI
             catch (Exception ex)
             {
                 alertLbl.Text = "Please enter valid numbers for the number of users!";
-                // Simulasyonu durdur
+                //Stop simulation
                 return;
             }                
 
@@ -75,21 +74,21 @@ namespace Simulation.FormUI
 
             alertLbl.Text = "Simulating database transactions...";
 
-            // İzolasyon seviyeleri dizisi
+            // Array of isolation levels
             string[] isolationLevels = { "READ UNCOMMITTED", "READ COMMITTED", "REPEATABLE READ", "SERIALIZABLE" };
 
-            // Her bir izolasyon seviyesi için işlem sürelerini ve deadlock sayılarını saklamak için değişkenler
+            // Variables to store processing times and deadlock counts for each isolation level
             double[] typeA_durations = new double[isolationLevels.Length];
             double[] typeB_durations = new double[isolationLevels.Length];
 
-            // Her bir izolasyon seviyesi için simülasyonu gerçekleştir
+            // Perform the simulation for each isolation level
             for (int i = 0; i < isolationLevels.Length; i++)
             {
                 string isolationLevel = isolationLevels[i];
 
                 alertLbl.Text = $"Simulation for Isolation Level: {isolationLevel}";
 
-                // Type A kullanıcılarının işlemlerini başlat
+                //Initialize transactions for Type A users
                 Task[] typeATasks = new Task[typeAUsers];
                 for (int j = 0; j < typeAUsers; j++)
                 {
@@ -100,7 +99,7 @@ namespace Simulation.FormUI
                     });
                 }
 
-                // Type B kullanıcılarının işlemlerini başlat
+                //Initialize Type B users' transactions
                 Task[] typeBTasks = new Task[typeBUsers];
                 for (int j = 0; j < typeBUsers; j++)
                 {
@@ -111,15 +110,15 @@ namespace Simulation.FormUI
                     });
                 }
 
-                // Tüm işlemlerin tamamlanmasını bekleyin
+                //Wait for all operations to complete
                 await Task.WhenAll(typeATasks);
                 await Task.WhenAll(typeBTasks);
 
-                // Ortalama işlem sürelerini hesapla
+                //Calculate average processing times
                 typeA_durations[i] /= typeAUsers;
                 typeB_durations[i] /= typeBUsers;
 
-                // İzolasyon seviyesine özgü textbox isimlerini oluştur
+                // Create textbox names specific to the isolation level
                 string typeAUsersTextBoxName = $"NumberofTypeAUsersTbx{i + 1}";
                 string typeBUsersTextBoxName = $"NumberofTypeBUsersTbx{i + 1}";
                 string averageDurationOfTypeATbxName = $"AverageDurationOfTypeATbx{i + 1}";
@@ -127,7 +126,7 @@ namespace Simulation.FormUI
                 string deadlocksEncounteredByTypeATbxName = $"DeadlocksEncounteredByTypeATbx{i + 1}";
                 string deadlocksEncounteredByTypeBTbxName = $"DeadlocksEncounteredByTypeBTbx{i + 1}";
 
-                // İzolasyon seviyesine özgü textboxları bul
+                // Find textboxes specific to the isolation level
                 TextBox typeAUsersTextBox = (TextBox)this.Controls.Find(typeAUsersTextBoxName, true).FirstOrDefault();
                 TextBox typeBUsersTextBox = (TextBox)this.Controls.Find(typeBUsersTextBoxName, true).FirstOrDefault();
                 TextBox averageDurationOfTypeATbx = (TextBox)this.Controls.Find(averageDurationOfTypeATbxName, true).FirstOrDefault();
@@ -135,7 +134,7 @@ namespace Simulation.FormUI
                 TextBox deadlocksEncounteredByTypeATbx = (TextBox)this.Controls.Find(deadlocksEncounteredByTypeATbxName, true).FirstOrDefault();
                 TextBox deadlocksEncounteredByTypeBTbx = (TextBox)this.Controls.Find(deadlocksEncounteredByTypeBTbxName, true).FirstOrDefault();
 
-                // İzolasyon seviyesine özgü textboxları doldur
+                // Fill textboxes specific to the isolation level
                 if (typeAUsersTextBox != null)
                 {
                     typeAUsersTextBox.Text = typeAUsers.ToString();
@@ -190,22 +189,22 @@ namespace Simulation.FormUI
 
                     try
                     {
-                        // İzolasyon seviyesini ayarla
+                        // Set isolation level
                         command.CommandText = $"SET TRANSACTION ISOLATION LEVEL {isolationLevel}";
                         await command.ExecuteNonQueryAsync();
 
-                        // İşlemi başlat
+                        //Start the process
                         transaction = connection.BeginTransaction();
 
-                        // Komut nesnesine işlemi ata
+                        //Assign the action to the command object
                         command.Transaction = transaction;
 
-                        // Rastgele güncelleme sorgularını çalıştır
+                        // Run random update queries
                         for (int j = 0; j < 5; j++)
                         {
                             if (rand.NextDouble() < 0.5)
                             {
-                                // Rastgele başlangıç ve bitiş tarihleri oluştur
+                                // Generate random start and end dates
                                 DateTime beginDate = new DateTime(2011 + rand.Next(5), 1, 1); // Random year between 2011 and 2015
                                 DateTime endDate = new DateTime(beginDate.Year, 12, 31); // End date is end of the same year
 
@@ -221,7 +220,7 @@ namespace Simulation.FormUI
                             }
                         }
 
-                        // İşlemi tamamla
+                        // Complete the transaction
                         transaction.Commit();
                     }
                     catch (SqlException ex)
@@ -230,25 +229,25 @@ namespace Simulation.FormUI
                         if (ex.Number == 1205) // Deadlock error number
                         {
                             Interlocked.Increment(ref deadlockCount); // Increment deadlock count
-                            Interlocked.Increment(ref deadlockCounts[0][isolationLevelIndex]); // Deadlock sayısını artır
+                            Interlocked.Increment(ref deadlockCounts[0][isolationLevelIndex]); //Increase deadlock count
                             logTbx.Text += $"Deadlock occurred: {ex.Message}\n";
-                            logTbx.Text += "DEADLOCK OLDU!!!!!!!!!!\n";
+                            logTbx.Text += "IT WAS DEADLOCK!!!!!!!!!!\n";
                             alertLbl.Text = "Deadlock occurred!";
 
 
-                            // Rollback the transaction in case of any error(İşlem sırasında bir hata oluşursa işlemi geri al)
+                            // Rollback the transaction in case of any error 
                             if (transaction != null)
                                 transaction.Rollback();
                         }
                         else
                         {
-                            // Hata durumunu işle
+                            // Handle error status
                             logTbx.Text += $"An error occurred: {ex.Message}\n";
-                            logTbx.Text += "HATA OLDU!!!!!!!!!!\n";
+                            logTbx.Text += "IT WAS AN ERROR!!!!!!!!!!\n";
                             alertLbl.Text = "An error occurred!";
 
 
-                            // Rollback the transaction in case of any error(İşlem sırasında bir hata oluşursa işlemi geri al)
+                            // Rollback the transaction in case of any error 
                             if (transaction != null)
                                 transaction.Rollback();
                         }
@@ -256,7 +255,7 @@ namespace Simulation.FormUI
                     }
                     finally
                     {
-                        // Bağlantıyı kapat
+                        // Close the connection
                         connection.Close();
                     }
                 }
@@ -274,7 +273,7 @@ namespace Simulation.FormUI
 
             DateTime beginTime = DateTime.Now;
 
-            Random rand = new Random(); // Her iş parçacığı için yeni bir Random nesnesi oluştur
+            Random rand = new Random(); // Create a new Random object for each thread
 
             for (int i = 0; i < numberOfRunTransactions; i++)
             {
@@ -286,24 +285,24 @@ namespace Simulation.FormUI
 
                     try
                     {
-                        // İzolasyon seviyesini ayarla
+                        // Set isolation level
                         command.CommandText = $"SET TRANSACTION ISOLATION LEVEL {isolationLevel}";
                         await command.ExecuteNonQueryAsync();
 
-                        // İşlemi başlat
+                        //Start the process
                         transaction = connection.BeginTransaction();
 
-                        // Komut nesnesine işlemi ata
+                        //Assign the action to the command object
                         command.Transaction = transaction;
 
-                        // Rastgele güncelleme sorgularını çalıştır
+                        // Run random update queries
                         for (int j = 0; j < 5; j++)
                         {
                             if (rand.NextDouble() < 0.5)
                             {
-                                // Rastgele başlangıç ve bitiş tarihleri oluştur
-                                DateTime beginDate = new DateTime(2011 + rand.Next(5), 1, 1); // 2011 ile 2015 arasında rastgele yıl
-                                DateTime endDate = new DateTime(beginDate.Year, 12, 31); // Aynı yılın sonu
+                                // Generate random start and end dates
+                                DateTime beginDate = new DateTime(2011 + rand.Next(5), 1, 1); // Random year between 2011 and 2015
+                                DateTime endDate = new DateTime(beginDate.Year, 12, 31); // End date is end of the same year
 
                                 command.CommandText = "SELECT SUM(Sales.SalesOrderDetail.OrderQty) " +
                                                       "FROM Sales.SalesOrderDetail " +
@@ -317,7 +316,7 @@ namespace Simulation.FormUI
                             }
                         }
 
-                        // İşlemi tamamla
+                        // Complete the transaction
                         transaction.Commit();
                     }
                     catch (SqlException ex)
@@ -326,23 +325,23 @@ namespace Simulation.FormUI
                         if (ex.Number == 1205) // Deadlock error number
                         {
                             Interlocked.Increment(ref deadlockCount); // Increment deadlock count
-                            Interlocked.Increment(ref deadlockCounts[1][isolationLevelIndex]); // Deadlock sayısını artır
+                            Interlocked.Increment(ref deadlockCounts[1][isolationLevelIndex]); //Increase deadlock count
                             logTbx.Text += $"Deadlock occurred: {ex.Message}\n";
-                            logTbx.Text += "DEADLOCK OLDU!!!!!!!!!!\n";
+                            logTbx.Text += "IT WAS DEADLOCK!!!!!!!!!!\n";
                             alertLbl.Text = "Deadlock occurred!";
 
-                            // Rollback the transaction in case of any error(İşlem sırasında bir hata oluşursa işlemi geri al)
+                            // Rollback the transaction in case of any error 
                             if (transaction != null)
                                 transaction.Rollback();
                         }
                         else
                         {
-                            // Hata durumunu işle
+                            // Handle error status
                             logTbx.Text += $"An error occurred: {ex.Message}\n";
-                            logTbx.Text += "HATA OLDU!!!!!!!!!!\n";
+                            logTbx.Text += "IT WAS AN ERROR!!!!!!!!!!\n";
                             alertLbl.Text = "An error occurred!";
 
-                            // Rollback the transaction in case of any error(İşlem sırasında bir hata oluşursa işlemi geri al)
+                            // Rollback the transaction in case of any error 
                             if (transaction != null)
                                 transaction.Rollback();
                         }
@@ -350,7 +349,7 @@ namespace Simulation.FormUI
                     }
                     finally
                     {
-                        // Bağlantıyı kapat
+                        // Close the connection
                         connection.Close();
                     }
                 }

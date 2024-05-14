@@ -15,11 +15,11 @@ namespace Simulation.FormUI
 {
     public partial class IsolationLevelsSimulationForm : Form
     {
-        public string connectionString = "Server=SQLEXPRESS;Database=AdventureWorks2022;User Id=id;Password=password;password Timeout=120;";
+        static string connectionString = "Server=SQLEXPRESS;Database=AdventureWorks2022;User Id=[ID];Password=[PASSWORD];Connect Timeout=240";
 
-        //Connect Timeout=120; Increase the timeout period to complete the operation and give SQL Server more time.
+        //Connect Timeout=[ ]; Increase the timeout period to complete the operation and give SQL Server more time.
 
-        public int numberOfRunTransactions = 10; //100  
+        public int numberOfRunTransactions = 3; //100  
         public int deadlockCount = 0;
         public int[][] deadlockCounts = new int[2][] { new int[4], new int[4] };
 
@@ -213,8 +213,13 @@ namespace Simulation.FormUI
                                                       "WHERE UnitPrice > 100 " +
                                                       "AND EXISTS (SELECT * FROM Sales.SalesOrderHeader " +
                                                       "WHERE Sales.SalesOrderHeader.SalesOrderID = Sales.SalesOrderDetail.SalesOrderID " +
-                                                      $"AND Sales.SalesOrderHeader.OrderDate BETWEEN '{beginDate.ToString("yyyy-MM-dd")}' AND '{endDate.ToString("yyyy-MM-dd")}' " +
+                                                      $"AND Sales.SalesOrderHeader.OrderDate BETWEEN @BeginDate AND @EndDate " +
                                                       "AND Sales.SalesOrderHeader.OnlineOrderFlag = 1)";
+
+                                // prevent SQL injection and handles dates more appropriately
+                                command.Parameters.Clear();
+                                command.Parameters.AddWithValue("@BeginDate", beginDate.ToString("yyyy-MM-dd"));
+                                command.Parameters.AddWithValue("@EndDate", endDate.ToString("yyyy-MM-dd"));
 
                                 await command.ExecuteNonQueryAsync();
                             }
@@ -309,8 +314,13 @@ namespace Simulation.FormUI
                                                       "WHERE UnitPrice > 100 " +
                                                       "AND EXISTS (SELECT * FROM Sales.SalesOrderHeader " +
                                                       "WHERE Sales.SalesOrderHeader.SalesOrderID = Sales.SalesOrderDetail.SalesOrderID " +
-                                                      $"AND Sales.SalesOrderHeader.OrderDate BETWEEN '{beginDate.ToString("yyyy-MM-dd")}' AND '{endDate.ToString("yyyy-MM-dd")}' " +
+                                                      $"AND Sales.SalesOrderHeader.OrderDate BETWEEN @BeginDate AND @EndDate " +
                                                       "AND Sales.SalesOrderHeader.OnlineOrderFlag = 1)";
+
+                                // prevent SQL injection and handles dates more appropriately
+                                command.Parameters.Clear();
+                                command.Parameters.AddWithValue("@BeginDate", beginDate.ToString("yyyy-MM-dd"));
+                                command.Parameters.AddWithValue("@EndDate", endDate.ToString("yyyy-MM-dd"));
 
                                 await command.ExecuteScalarAsync();
                             }

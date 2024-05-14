@@ -19,7 +19,7 @@ namespace Simulation.FormUI
 
         //Connect Timeout=[ ]; Increase the timeout period to complete the operation and give SQL Server more time.
 
-        public int numberOfRunTransactions = 3; //100  
+        public int numberOfRunTransactions = 10; //100  
         public int deadlockCount = 0;
         public int[][] deadlockCounts = new int[2][] { new int[4], new int[4] };
 
@@ -35,13 +35,13 @@ namespace Simulation.FormUI
         private void IsolationLevelsSimulationForm_Load(object sender, EventArgs e)
         {
             alertLbl.ForeColor = Color.Red;
-            alertDeadlockLbl.ForeColor = Color.Red; 
+            alertDeadlockLbl.ForeColor = Color.Red;
             alertLbl.Text = "Please enter the number of users for Type A and Type B transactions.";
-            logTbx.Text = "The log will be displayed here.";
+            logTbx.Text = "The log will be displayed here.\n";
         }
 
         private void runBtn_Click(object sender, EventArgs e)
-        {     
+        {
 
             try
             {
@@ -57,19 +57,19 @@ namespace Simulation.FormUI
                 alertLbl.Text = "Please enter valid numbers for the number of users!";
                 //Stop simulation
                 return;
-            }                
+            }
 
         }
 
-        private async Task RunAsync(int typeAUser, int typeBUser)
+        private async Task RunAsync(int typeAUsers, int typeBUsers)
         {
-                alertLbl.Text = "Running database simulation...";
+            alertLbl.Text = "Running database simulation...";
 
-                await SimulateDatabaseTransactions(typeAUsers, typeBUsers);
- 
+            await SimulateDatabaseTransactions(typeAUsers, typeBUsers);
+
         }
 
-        public async Task SimulateDatabaseTransactions(int typeAUser, int typeBUser)
+        public async Task SimulateDatabaseTransactions(int typeAUsers, int typeBUsers)
         {
 
             alertLbl.Text = "Simulating database transactions...";
@@ -168,7 +168,7 @@ namespace Simulation.FormUI
 
             alertLbl.Text = "Database simulation completed.";
             alertDeadlockLbl.Text = "Number of Deadlocks Encountered: " + deadlockCount;
-            
+
         }
 
         public async Task<double> SimulateTypeAUser(string isolationLevel)
@@ -235,8 +235,8 @@ namespace Simulation.FormUI
                         {
                             Interlocked.Increment(ref deadlockCount); // Increment deadlock count
                             Interlocked.Increment(ref deadlockCounts[0][isolationLevelIndex]); //Increase deadlock count
-                            logTbx.Text += $"Deadlock occurred: {ex.Message}\n";
-                            logTbx.Text += "IT WAS DEADLOCK!!!!!!!!!!\n";
+                            logTbx.AppendText($"Deadlock occurred: {ex.Message}\n");
+                            logTbx.AppendText("IT WAS DEADLOCK!!!!!!!!!!\n");
                             alertLbl.Text = "Deadlock occurred!";
 
 
@@ -247,8 +247,8 @@ namespace Simulation.FormUI
                         else
                         {
                             // Handle error status
-                            logTbx.Text += $"An error occurred: {ex.Message}\n";
-                            logTbx.Text += "IT WAS AN ERROR!!!!!!!!!!\n";
+                            logTbx.AppendText($"An error occurred: {ex.Message}\n");
+                            logTbx.AppendText("IT WAS AN ERROR!!!!!!!!!!\n");
                             alertLbl.Text = "An error occurred!";
 
 
@@ -336,8 +336,8 @@ namespace Simulation.FormUI
                         {
                             Interlocked.Increment(ref deadlockCount); // Increment deadlock count
                             Interlocked.Increment(ref deadlockCounts[1][isolationLevelIndex]); //Increase deadlock count
-                            logTbx.Text += $"Deadlock occurred: {ex.Message}\n";
-                            logTbx.Text += "IT WAS DEADLOCK!!!!!!!!!!\n";
+                            logTbx.AppendText($"Deadlock occurred: {ex.Message}\n");
+                            logTbx.AppendText("IT WAS DEADLOCK!!!!!!!!!!\n");
                             alertLbl.Text = "Deadlock occurred!";
 
                             // Rollback the transaction in case of any error 
@@ -347,8 +347,8 @@ namespace Simulation.FormUI
                         else
                         {
                             // Handle error status
-                            logTbx.Text += $"An error occurred: {ex.Message}\n";
-                            logTbx.Text += "IT WAS AN ERROR!!!!!!!!!!\n";
+                            logTbx.AppendText($"An error occurred: {ex.Message}\n");
+                            logTbx.AppendText("IT WAS AN ERROR!!!!!!!!!!\n");
                             alertLbl.Text = "An error occurred!";
 
                             // Rollback the transaction in case of any error 
